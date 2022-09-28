@@ -1,53 +1,29 @@
 import React, { useState } from 'react'
 import { FlatList, StyleSheet, View } from 'react-native'
+import { useDispatch, useSelector } from 'react-redux'
 import Counter from '../../components/Counter'
 import FloatingBtn from '../../components/FloatingBtn'
 import Header from '../../components/Header'
 import TaskForm from './TaskForm'
 import TaskTile from './TaskTile'
+import { getTasks } from '../../redux/selectors'
+import { deleteTask, toggleTask } from '../../redux/actions'
 
 export default function TaksScreen() {
-    const [tasks, setTasks] = useState([]);
     const [isFormVisible, setIsFormVisible] = useState(false);
+    const tasks = useSelector(getTasks);
+    const dispatch = useDispatch();
 
     const renderItem = ({item}) => {
         return <TaskTile task={item} onUpdateTask={onUpdateTask} onDeleteTask={onDeleteTask}/>
     }
 
-    const onAddTask = (title) => {
-        setTasks([...tasks,{
-            id: Date.now(),
-            title,
-            isCompleted: false
-        }])
-    }
-
     const onDeleteTask = (id) => {
-        let newTasks = [];
-        tasks.forEach(t => {
-            if (t.id !== id){
-                newTasks.push(t)
-                return
-            }
-        })
-        setTasks(newTasks)
+        dispatch(deleteTask(id));
     }
 
     const onUpdateTask = (id) => {
-        let newTasks = [];
-        tasks.forEach(t => {
-            if (t.id !== id){
-                newTasks.push(t)
-                return
-            }
-            newTasks.push({
-                id,
-                title:t.title,
-                isCompleted: !t.isCompleted
-            })
-        })
-
-        setTasks(newTasks)
+        dispatch(toggleTask(id));
     }
 
     const _toggleForm = () => {
@@ -60,7 +36,7 @@ export default function TaksScreen() {
             ListHeaderComponent={
                 <>
                     <Header/>
-                    {isFormVisible && <TaskForm onAddTask={onAddTask}/>}
+                    {isFormVisible && <TaskForm/>}
                     <View style={styles.containerCounters}>
                         <Counter nb={tasks.length} title='taches crées'/>
                         <Counter nb={tasks.filter(t => t.isCompleted === true).length} title='taches effectuées'/>
